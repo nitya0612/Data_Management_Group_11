@@ -5,10 +5,10 @@ library(tidyr)
 library(lubridate)
 
 # Set up the connection to the SQLite database
-connection <- RSQLite::dbConnect(RSQLite::SQLite(), "new_database.db")
+connection_new <- RSQLite::dbConnect(RSQLite::SQLite(), "new_database.db")
 
 # Check if the connection is successful
-if (dbIsValid(connection)) {
+if (dbIsValid(connection_new)) {
   cat("Connection to the database established successfully.\n")
 } else {
   stop("Failed to establish connection to the database.")
@@ -26,18 +26,18 @@ shipping <- read.csv("shoes_data/shipping.csv")
 transactions <- read.csv("shoes_data/transactions.csv")
 
 
-dbWriteTable(connection, "advertisement", advertisement, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "category", category, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "customer", customer, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "discount", discount, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "inventory", inventory, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "orders", orders, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "rating", rating, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "shipping", shipping, row.names=FALSE, overwrite = TRUE)
-dbWriteTable(connection, "transactions", transactions, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "advertisement", advertisement, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "category", category, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "customer", customer, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "discount", discount, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "inventory", inventory, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "orders", orders, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "rating", rating, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "shipping", shipping, row.names=FALSE, overwrite = TRUE)
+dbWriteTable(connection_new, "transactions", transactions, row.names=FALSE, overwrite = TRUE)
 
 # Top rated products 
-top_rated_prod <- RSQLite::dbGetQuery(connection, "SELECT p.product_id,
+top_rated_prod <- RSQLite::dbGetQuery(connection_new, "SELECT p.product_id,
                 ROUND(AVG(r.rating), 1) AS product_rating
                 FROM inventory p
                 INNER JOIN rating r ON p.product_id = r.product
@@ -46,7 +46,7 @@ top_rated_prod <- RSQLite::dbGetQuery(connection, "SELECT p.product_id,
                 LIMIT 10;")
 
 # Top categories 
-top_cat <- RSQLite::dbGetQuery(connection, "
+top_cat <- RSQLite::dbGetQuery(connection_new, "
   SELECT c.category_id,
          c.category_name,
          SUM(r.rating) AS product_rating
@@ -62,7 +62,7 @@ top_cat <- RSQLite::dbGetQuery(connection, "
 ")
 
 # Top expensive products
-top_expensive_products <- RSQLite::dbGetQuery(connection, "
+top_expensive_products <- RSQLite::dbGetQuery(connection_new, "
   SELECT product_id,
          MAX(price) AS max_price
   FROM inventory
@@ -77,7 +77,7 @@ library(naniar)
 gg_miss_var(customer)
 gg_miss_var(orders)
 
-top_expensive_products <- RSQLite::dbGetQuery(connection, "
+top_expensive_products <- RSQLite::dbGetQuery(connection_new, "
 SELECT i.product_id,
        COUNT(o.product_1) AS total_quantity_sold
 FROM orders AS o
@@ -88,7 +88,7 @@ LIMIT 10;
 ")
 
 # Top ad sites
-top_ad_sites <- RSQLite::dbGetQuery(connection, "
+top_ad_sites <- RSQLite::dbGetQuery(connection_new, "
   SELECT a.ad_site,
          COUNT(*) AS site_usage_count
   FROM advertisement AS a
@@ -114,7 +114,7 @@ plot_top_categories <- ggplot(top_cat, aes(x = forcats::fct_reorder(category_nam
   coord_flip() + theme_minimal()
 
 # Top sold products
-top_sold_products <- RSQLite::dbGetQuery(connection, "
+top_sold_products <- RSQLite::dbGetQuery(connection_new, "
   SELECT p.product_id,
          p.product_name,
          COUNT(*) AS num_sales
@@ -133,7 +133,7 @@ plot_top_sold_products <- ggplot(top_sold_products, aes(x = forcats::fct_reorder
   ylab("Number of Sales") + theme_minimal()
 
 # Top shipping methods
-top_shipping_methods <- RSQLite::dbGetQuery(connection, "
+top_shipping_methods <- RSQLite::dbGetQuery(connection_new, "
   SELECT o.shipping_speed AS shipping_speed,
          COUNT(*) AS num_orders
   FROM shipping o
@@ -150,7 +150,7 @@ plot_top_shipping_methods <- ggplot(top_shipping_methods, aes(x = forcats::fct_r
   ylab("Number of Orders") + theme_minimal()
 
 # Top shipping couriers
-top_shipping_couriers <- RSQLite::dbGetQuery(connection, "
+top_shipping_couriers <- RSQLite::dbGetQuery(connection_new, "
   SELECT o.shipping_courier,
          COUNT(*) AS num_orders
   FROM shipping o
@@ -168,7 +168,7 @@ plot_top_shipping_couriers <- ggplot(top_shipping_couriers, aes(x = forcats::fct
   ylab("Number of Orders") + theme_minimal()
 
 # Top shoe sizes
-top_shoe_sizes <- RSQLite::dbGetQuery(connection, "
+top_shoe_sizes <- RSQLite::dbGetQuery(connection_new, "
 SELECT o.size_1,
        COUNT(*) AS num_orders
 FROM orders o
@@ -253,6 +253,6 @@ ggsave(paste0("analysis_graphs/plot_discount_utilisation",this_filename_date,"_"
 ggsave(paste0("analysis_graphs/plot_payment_methods",this_filename_date,"_",this_filename_time,".png"), plot = plot_payment_methods, width = 8, height = 6, units = "in")
 
 # Close the database connection
-dbDisconnect(connection)
+dbDisconnect(connection_new)
 
 

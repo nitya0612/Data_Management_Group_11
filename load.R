@@ -205,37 +205,61 @@ CREATE TABLE IF NOT EXISTS transactions(
   
 ); ")
 
-advertisement<- read.csv("shoes_data/advertisement.csv") 
+advertisement<- read.csv("shoes_data/advertisement/advertisement.csv") 
 
-category<-  read.csv("shoes_data/category.csv") 
+category<-  read.csv("shoes_data/category/category.csv") 
 
-customer<-  read.csv("shoes_data/customer.csv") 
+customer<-  read.csv("shoes_data/customer/customer.csv") 
 
-discount<-  read.csv("shoes_data/discount.csv") 
+discount<-  read.csv("shoes_data/discount/discount.csv") 
 
-inventory<-  read.csv("shoes_data/inventory.csv") 
+inventory<-  read.csv("shoes_data/inventory/inventory.csv") 
 
-orders<-  read.csv("shoes_data/orders.csv") 
+orders<-  read.csv("shoes_data/orders/orders.csv") 
 
-rating<-  read.csv("shoes_data/rating.csv") 
+rating<-  read.csv("shoes_data/rating/rating.csv") 
 
-shipping<-  read.csv("shoes_data/shipping.csv") 
+shipping<-  read.csv("shoes_data/shipping/shipping.csv") 
 
-transactions <-  read.csv("shoes_data/transactions.csv") 
+transactions <-  read.csv("shoes_data/transactions/transactions.csv") 
 
+
+# Define the path to the data_upload folder
+data_upload_path <- "shoes_data"
+
+# Get a list of all subdirectories within data_upload
+subdirectories <- list.dirs(data_upload_path, full.names = TRUE, recursive = FALSE)
+
+# Iterate through each subdirectory
+for (entity_folder in subdirectories) {
+  # Extract the entity name from the directory path
+  entity_name <- basename(entity_folder)
+  # Get a list of all CSV files within the entity folder
+  csv_files <- list.files(entity_folder, pattern = "*.csv", full.names = TRUE)
+  # Initialize an empty dataframe to store the merged data
+  merged_df <- NULL
+  # Iterate through each CSV file
+  for (csv_file in csv_files) {
+    # Read the CSV file into a dataframe
+    df <- read_csv(csv_file)
+    # Merge the dataframe with the existing merged dataframe
+    if (is.null(merged_df)) {
+      merged_df <- df
+    } else {
+      merged_df <- bind_rows(merged_df, df)
+    }
+  }
+  # Assign the merged dataframe to a variable with the entity name
+  assign(paste0("ecom_", entity_name), merged_df, envir = .GlobalEnv)
+}
+
+# Print the names of the created dataframes
+print(ls(pattern = "ecom_"))
 
 #Data checks
 
 library(DBI)
 # Check data integrity and validity
-all_files <- list.files("shoes_data/")
-for (variable in all_files) {
-  this_filepath <- paste0("shoes_data/", variable)
-  this_file_contents <- readr::read_csv(this_filepath, show_col_types = FALSE) 
-  number_of_rows <- nrow(this_file_contents)
-  print(paste0("Checking for: ", variable))
-  print(paste0(" is ", nrow(unique(this_file_contents[,1])) == number_of_rows))
-}
 
 connection_new <- RSQLite::dbConnect(RSQLite::SQLite(), "new_database.db")
 
@@ -728,4 +752,31 @@ RSQLite::dbWriteTable(connection_new,"orders",orders,append=TRUE)
 RSQLite::dbWriteTable(connection_new,"rating",rating,append=TRUE)
 RSQLite::dbWriteTable(connection_new,"shipping",shipping,append=TRUE)
 RSQLite::dbWriteTable(connection_new,"transactions",transactions,append=TRUE)
+
+# List all entity folders in the shoes_data directory
+entity_folders <- list.files("shoes_data", full.names = TRUE)
+
+# Create a list to store data frames for each entity
+entity_data <- list()
+
+# Loop over each entity folder
+for (folder in entity_folders) {
+  # Extract the entity name from the folder path
+  entity_name <- basename(folder)
+  
+  # List all CSV files within the entity folder
+  csv_files <- list.files(folder, pattern = "\\.csv$", full.names = TRUE)
+  
+  # Read each CSV file and store it in a data frame
+  entity_df <- lapply(csv_files, read.csv)
+  
+  # Combine all data frames into a single data frame
+  entity_df <- do.call(rbind, entity_df)
+  
+  # Assign the data frame to the list with the entity name as the key
+  entity_data[[paste0("shoe_", entity_name)]] <- entity_df
+}
+
+# Now, entity_data contains data frames for each entity with names like "shoe_entity_name"
+# You can access each data frame using entity_data$shoe_entity_name
 
