@@ -15,15 +15,15 @@ if (dbIsValid(connection_new)) {
 }
 
 # Load the data from CSV files into data frames
-advertisement <- read.csv("shoes_data/advertisement.csv")
-category <- read.csv("shoes_data/category.csv")
-customer <- read.csv("shoes_data/customer.csv")
-discount <- read.csv("shoes_data/discount.csv")
-inventory <- read.csv("shoes_data/inventory.csv")
-orders <- read.csv("shoes_data/orders.csv")
-rating <- read.csv("shoes_data/rating.csv")
-shipping <- read.csv("shoes_data/shipping.csv")
-transactions <- read.csv("shoes_data/transactions.csv")
+advertisement <- read.csv("shoes_data/advertisement/advertisement.csv")
+category <- read.csv("shoes_data/category/category.csv")
+customer <- read.csv("shoes_data/customer/customer.csv")
+discount <- read.csv("shoes_data/discount/discount.csv")
+inventory <- read.csv("shoes_data/inventory/inventory.csv")
+orders <- read.csv("shoes_data/orders/orders.csv")
+rating <- read.csv("shoes_data/rating/rating.csv")
+shipping <- read.csv("shoes_data/shipping/shipping.csv")
+transactions <- read.csv("shoes_data/transactions/transactions.csv")
 
 
 dbWriteTable(connection_new, "advertisement", advertisement, row.names=FALSE, overwrite = TRUE)
