@@ -32,10 +32,15 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           Rscript -e 'install.packages(c("RSQLite","readr","dplyr","rmarkdown","knitr","readxl","openxlsx","ggplot2","scales","tidyr","lubridate","naniar"))'
+      
+      - name: Execute R Script
+        run: |
+          Rscript load.R
+          
       - name: Execute R Script
         run: |
           Rscript data_analysis.R
-          Rscript load.R
+          
 
       - name: Add files
         run: |
