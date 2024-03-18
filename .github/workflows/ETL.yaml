@@ -46,7 +46,6 @@ jobs:
         run: |
           git config --global user.email "guptanitya200@gmail.com"
           git config --global user.name "nitya0612"
-          git add my_database.db
           git add new_database.db
           git add analysis_graphs/*.png
           
